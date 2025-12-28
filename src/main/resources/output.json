@@ -1,0 +1,97 @@
+{
+  "project_metadata": {
+    "title": "Hierarchical Knowledge Model",
+    "status": "Active",
+    "created_date": "2025-11-03"
+  },
+  "modules": [
+    {
+      "module_id": "MOD-A",
+      "module_name": "Core Systems",
+      "components": [
+        {
+          "component_id": "COMP-101",
+          "name": "Data Ingestion",
+          "subsystems": [
+            {
+              "system_id": "SYS-INGEST-A",
+              "type": "Stream Processor",
+              "configuration": {
+                "source": "Kafka",
+                "schema_version": "2.1",
+                "partitions": 8,
+                "security_level": "High"
+              },
+              "logs": [
+                {
+                  "event": "Start",
+                  "timestamp": "2025-11-03T10:00:00Z"
+                },
+                {
+                  "event": "Schema Load",
+                  "timestamp": "2025-11-03T10:00:05Z"
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "interfaces": [
+        "API",
+        "CLI"
+      ]
+    },
+    {
+      "module_id": "MOD-B",
+      "module_name": "Analytics Layer",
+      "components": [
+        {
+          "component_id": "COMP-202",
+          "name": "Modeling Engine",
+          "models": [
+            {
+              "model_name": "Predictive_V1",
+              "algorithm": "Random Forest",
+              "hyperparameters": {
+                "trees": 100,
+                "depth_max": 15,
+                "split_criterion": "gini"
+              },
+              "metrics": [
+                {
+                  "name": "Accuracy",
+                  "value": 0.92
+                },
+                {
+                  "name": "Precision",
+                  "value": 0.88
+                }
+              ]
+            }
+          ],
+          "lookup_table": {
+            "key": "RF-TERM-345",
+            "terms": [
+              {
+                "term_name": "Gini Impurity",
+                "source": "Decision Tree Theory",
+                "documentation": {
+                  "url": "doc/gini_impurity.html",
+                  "version": "1.2"
+                },
+                "core_explanation": {
+                  "level": "Technical",
+                  "details": {
+                    "purpose": "Measures the likelihood of a new, randomly chosen data point being misclassified if it were randomly labeled according to the distribution of labels in the subset.",
+                    "formula_name": "Impurity Index"
+                  }
+                }
+              }
+            ]
+          }
+        }
+      ],
+      "reporting_format": "PDF"
+    }
+  ]
+}
