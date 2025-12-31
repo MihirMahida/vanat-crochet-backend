@@ -19,8 +19,12 @@ public class VanatController {
     @Value("${ADMIN_API_KEY}")
     private String adminKey;
 
+    private final VanatService service;
+
     @Autowired
-    public VanatService service;
+    public VanatController(VanatService service) {
+        this.service = service;
+    }
 
     @GetMapping
     public List<VanatData> getAllProducts() {

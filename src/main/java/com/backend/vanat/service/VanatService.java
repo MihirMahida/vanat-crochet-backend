@@ -11,8 +11,12 @@ import java.util.List;
 @Service
 public class VanatService {
 
+    private final VanatRepo repo;
+
     @Autowired
-    public VanatRepo repo;
+    public VanatService(VanatRepo repo) {
+        this.repo = repo;
+    }
 
     public List<VanatData> getAllProducts() {
         return repo.findAll();
