@@ -7,6 +7,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 public class VanatApplication {
 
 	public static void main(String[] args) {
+		System.out.println("DB URL is: " + System.getenv("DB_URL"));
 		SpringApplication.run(VanatApplication.class, args);
 	}
 
