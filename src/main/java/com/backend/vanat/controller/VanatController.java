@@ -3,16 +3,21 @@ package com.backend.vanat.controller;
 import com.backend.vanat.model.VanatData;
 import com.backend.vanat.service.VanatService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 
 @RestController
 @RequestMapping("/api/products")
 public class VanatController {
+
+    @Value("${ADMIN_API_KEY}")
+    private String adminKey;
 
     @Autowired
     public VanatService service;
@@ -28,23 +33,39 @@ public class VanatController {
     }
 
     @PostMapping
-    public VanatData createProduct(@RequestBody VanatData product) {
-        return service.save(product);
+    public ResponseEntity<?> createProduct(@RequestBody VanatData product, @RequestHeader("X-API-KEY") String receivedKey) {
+
+        if (!adminKey.equals(receivedKey)) {
+            return ResponseEntity.status(401).body("Unauthorized: Invalid API Key");
+        }
+
+        return ResponseEntity.ok(service.save(product));
     }
 
     @PostMapping("/multipleProducts")
-    public List<VanatData> createMultipleProductsProduct(@RequestBody VanatData product) {
-        return service.saveMultipleProducts(product);
+    public ResponseEntity<?> createMultipleProductsProduct(@RequestBody List<VanatData> products, @RequestHeader("X-API-KEY") String receivedKey) {
+
+        if (!adminKey.equals(receivedKey)) {
+            return ResponseEntity.status(401).body("Unauthorized: Invalid API Key");
+        }
+
+        return ResponseEntity.ok(service.saveAll(products));
     }
 
     @PostMapping("/uploadImage")
-    public VanatData uploadImage(
+    public ResponseEntity<?> uploadImage(
             @RequestParam("name") String name,
             @RequestParam("description") String description,
             @RequestParam("price") Double price,
             @RequestParam("category") String category,
-            @RequestParam("image") MultipartFile imageFile
+            @RequestParam("image") MultipartFile imageFile,
+            @RequestHeader("X-API-KEY") String receivedKey
     ) throws IOException {
+
+        if (!adminKey.equals(receivedKey)) {
+            return ResponseEntity.status(401).body("Unauthorized: Invalid API Key");
+        }
+
         VanatData product = new VanatData();
         product.setName(name);
         product.setDescription(description);
@@ -53,32 +74,43 @@ public class VanatController {
         product.setImageName(imageFile.getOriginalFilename());
         product.setImageType(imageFile.getContentType());
         product.setImageData(imageFile.getBytes());
-        return service.save(product);
+        return ResponseEntity.ok(service.save(product));
     }
 
     @PostMapping("/uploadMultipleImages")
-    public List<VanatData> uploadMultipleImages(
+    public ResponseEntity<?> uploadMultipleImages(
             @RequestParam("name") List<String> names,
             @RequestParam("description") List<String> descriptions,
             @RequestParam("price") List<Double> prices,
             @RequestParam("category") List<String> categories,
-            @RequestParam("image") List<MultipartFile> imageFiles
+            @RequestParam("image") List<MultipartFile> imageFiles,
+            @RequestHeader("X-API-KEY") String receivedKey
     ) throws IOException {
-        int count = names.size();
-        List<VanatData> products = new java.util.ArrayList<>();
-        for (int i = 0; i < count; i++) {
+
+        if (!adminKey.equals(receivedKey)) {
+            return ResponseEntity.status(401).body("Unauthorized: Invalid API Key");
+        }
+
+        List<VanatData> products = new ArrayList<>();
+
+        for (int i = 0; i < names.size(); i++) {
             VanatData product = new VanatData();
             product.setName(names.get(i));
             product.setDescription(descriptions.get(i));
             product.setPrice(prices.get(i));
             product.setCategory(categories.get(i));
-            MultipartFile imageFile = imageFiles.get(i);
-            product.setImageName(imageFile.getOriginalFilename());
-            product.setImageType(imageFile.getContentType());
-            product.setImageData(imageFile.getBytes());
+
+            MultipartFile file = imageFiles.get(i);
+            product.setImageName(file.getOriginalFilename());
+            product.setImageType(file.getContentType());
+            product.setImageData(file.getBytes());
+
             products.add(product);
         }
-        return service.saveMultipleProducts(products);
+
+        // Ensure this service method is designed to save a List
+        service.saveAll(products);
+        return ResponseEntity.ok("Successfully uploaded " + products.size() + " products.");
     }
 
     @GetMapping("/category/{category}")
@@ -91,5 +123,21 @@ public class VanatController {
             @PathVariable String category,
             @RequestParam(defaultValue = "asc") String sort) {
         return service.getProductsByCategorySorted(category, sort);
+    }
+
+    @PutMapping("/{id}")
+    public ResponseEntity<?> updateProduct(@PathVariable Integer id, @RequestBody VanatData productDetails, @RequestHeader("X-API-KEY") String receivedKey) {
+        if (!adminKey.equals(receivedKey)) {
+            return ResponseEntity.status(401).body("Unauthorized: Invalid API Key");
+        }
+        return service.updateProduct(id, productDetails);
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<?> deleteProduct(@PathVariable Integer id, @RequestHeader("X-API-KEY") String receivedKey) {
+        if (!adminKey.equals(receivedKey)) {
+            return ResponseEntity.status(401).body("Unauthorized: Invalid API Key");
+        }
+        return service.deleteProduct(id);
     }
 }
