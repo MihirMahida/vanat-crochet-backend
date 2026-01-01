@@ -36,15 +36,18 @@ public class VanatService {
         return repo.saveAll(products);
     }
 
-    public List<VanatData> getProductsByCategory(String category) {
-        return repo.findByCategory(category);
-    }
-
     public List<VanatData> getProductsByCategorySorted(String category, String sort) {
         if ("desc".equalsIgnoreCase(sort)) {
             return repo.findByCategoryOrderByPriceDesc(category);
         }
         return repo.findByCategoryOrderByPriceAsc(category);
+    }
+
+    public List<VanatData> getAllProductsSorted(String sort) {
+        if ("desc".equalsIgnoreCase(sort)) {
+            return repo.findAllByOrderByPriceDesc();
+        }
+        return repo.findAllByOrderByPriceAsc();
     }
 
     public ResponseEntity<?> deleteProduct(Integer id) {

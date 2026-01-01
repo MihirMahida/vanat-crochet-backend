@@ -1,9 +1,12 @@
 package com.backend.vanat.controller;
 
+import com.backend.vanat.model.ProductDTO;
 import com.backend.vanat.model.VanatData;
 import com.backend.vanat.service.VanatService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -11,6 +14,7 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/products")
@@ -27,13 +31,32 @@ public class VanatController {
     }
 
     @GetMapping
-    public List<VanatData> getAllProducts() {
-        return service.getAllProducts();
+    public List<ProductDTO> getAllProducts() {
+        return service.getAllProducts().stream()
+                .map(ProductDTO::new)
+                .collect(Collectors.toList());
     }
 
     @GetMapping("/{id}")
     public ResponseEntity<VanatData> getProductById(@PathVariable Integer id) {
         return service.findById(id);
+    }
+
+    @GetMapping("/images/{id}")
+    public ResponseEntity<byte[]> getImage(@PathVariable Integer id) {
+        ResponseEntity<VanatData> response = service.findById(id);
+        if (response.getStatusCode().is2xxSuccessful() && response.getBody() != null) {
+            VanatData product = response.getBody();
+            byte[] imageData = product.getImageData();
+            if (imageData == null) {
+                return ResponseEntity.notFound().build();
+            }
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.parseMediaType(product.getImageType()));
+            headers.setContentLength(imageData.length);
+            return new ResponseEntity<>(imageData, headers, org.springframework.http.HttpStatus.OK);
+        }
+        return ResponseEntity.notFound().build();
     }
 
     @PostMapping
@@ -117,16 +140,21 @@ public class VanatController {
         return ResponseEntity.ok("Successfully uploaded " + products.size() + " products.");
     }
 
-    @GetMapping("/category/{category}")
-    public List<VanatData> getProductsByCategory(@PathVariable String category) {
-        return service.getProductsByCategory(category);
-    }
-
     @GetMapping("/category/{category}/sort")
-    public List<VanatData> getProductsByCategorySorted(
+    public List<ProductDTO> getProductsByCategorySorted(
             @PathVariable String category,
             @RequestParam(defaultValue = "asc") String sort) {
-        return service.getProductsByCategorySorted(category, sort);
+        return service.getProductsByCategorySorted(category, sort).stream()
+                .map(ProductDTO::new)
+                .collect(Collectors.toList());
+    }
+
+    @GetMapping("/sort")
+    public List<ProductDTO> getSortedProducts(
+            @RequestParam(defaultValue = "asc") String sort) {
+        return service.getAllProductsSorted(sort).stream()
+                .map(ProductDTO::new)
+                .collect(Collectors.toList());
     }
 
     @PutMapping("/{id}")
