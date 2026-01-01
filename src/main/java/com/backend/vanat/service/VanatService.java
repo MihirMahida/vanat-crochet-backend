@@ -3,6 +3,8 @@ package com.backend.vanat.service;
 import com.backend.vanat.model.ImageDTO;
 import com.backend.vanat.model.VanatData;
 import com.backend.vanat.repo.VanatRepo;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -13,6 +15,8 @@ import java.util.Optional;
 
 @Service
 public class VanatService {
+
+    private static final Logger logger = LoggerFactory.getLogger(VanatService.class);
 
     private final VanatRepo repo;
 
@@ -31,7 +35,16 @@ public class VanatService {
 
     @Transactional(readOnly = true)
     public Optional<ImageDTO> getImage(Integer id) {
-        return repo.findById(id).map(product -> new ImageDTO(product.getImageData(), product.getImageType()));
+        logger.info("Service: getImage called for id: {}", id);
+        Optional<VanatData> productOptional = repo.findById(id);
+        if (productOptional.isPresent()) {
+            VanatData product = productOptional.get();
+            logger.info("Service: Product found for id: {}. Image data present: {}", id, product.getImageData() != null);
+            return Optional.of(new ImageDTO(product.getImageData(), product.getImageType()));
+        } else {
+            logger.warn("Service: Product not found for id: {}", id);
+            return Optional.empty();
+        }
     }
 
     public VanatData save(VanatData product) {

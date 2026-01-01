@@ -4,6 +4,8 @@ import com.backend.vanat.model.ImageDTO;
 import com.backend.vanat.model.ProductDTO;
 import com.backend.vanat.model.VanatData;
 import com.backend.vanat.service.VanatService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
@@ -22,7 +24,9 @@ import java.util.stream.Collectors;
 @RequestMapping("/api/products")
 public class VanatController {
 
-    @Value("${ADMIN_API_KEY}")
+    private static final Logger logger = LoggerFactory.getLogger(VanatController.class);
+
+    @Value("${ADMIN_API_KEY}") // Default to empty string for local development
     private String adminKey;
 
     private final VanatService service;
@@ -48,14 +52,19 @@ public class VanatController {
 
     @GetMapping("/images/{id}")
     public ResponseEntity<byte[]> getImage(@PathVariable Integer id) {
+        logger.info("Controller: getImage called for id: {}", id);
         return service.getImage(id)
                 .map(imageDTO -> {
+                    logger.info("Controller: Image found for id: {}. Content-Type: {}", id, imageDTO.getContentType());
                     HttpHeaders headers = new HttpHeaders();
                     headers.setContentType(MediaType.parseMediaType(imageDTO.getContentType()));
                     headers.setContentLength(imageDTO.getData().length);
                     return new ResponseEntity<>(imageDTO.getData(), headers, org.springframework.http.HttpStatus.OK);
                 })
-                .orElse(ResponseEntity.notFound().build());
+                .orElseGet(() -> {
+                    logger.warn("Controller: Image not found for id: {}", id);
+                    return ResponseEntity.notFound().build();
+                });
     }
 
     @PostMapping
