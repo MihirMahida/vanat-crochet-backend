@@ -2,11 +2,13 @@ package com.backend.vanat.model;
 
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
-import lombok.Data;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 @Entity
-@Data
+@Getter
+@Setter
 @AllArgsConstructor
 @NoArgsConstructor
 public class VanatData {
@@ -24,4 +26,17 @@ public class VanatData {
     @Lob
     private byte[] imageData;
 
+    @Override
+    public String toString() {
+        return "VanatData{" +
+                "id=" + id +
+                ", name='" + name + '\'' +
+                ", description='" + description + '\'' +
+                ", price=" + price +
+                ", category='" + category + '\'' +
+                ", imageName='" + imageName + '\'' +
+                ", imageType='" + imageType + '\'' +
+                // imageData is excluded to avoid LOB access issues
+                '}';
+    }
 }
