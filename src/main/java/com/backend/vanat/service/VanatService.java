@@ -1,12 +1,15 @@
 package com.backend.vanat.service;
 
+import com.backend.vanat.model.ImageDTO;
 import com.backend.vanat.model.VanatData;
 import com.backend.vanat.repo.VanatRepo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class VanatService {
@@ -22,10 +25,13 @@ public class VanatService {
         return repo.findAll();
     }
 
-    public ResponseEntity<VanatData> findById(Integer id) {
-        return repo.findById(id)
-                .map(ResponseEntity::ok)
-                .orElse(ResponseEntity.notFound().build());
+    public Optional<VanatData> findById(Integer id) {
+        return repo.findById(id);
+    }
+
+    @Transactional(readOnly = true)
+    public Optional<ImageDTO> getImage(Integer id) {
+        return repo.findById(id).map(product -> new ImageDTO(product.getImageData(), product.getImageType()));
     }
 
     public VanatData save(VanatData product) {
