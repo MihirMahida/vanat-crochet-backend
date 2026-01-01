@@ -56,17 +56,27 @@ public class VanatService {
     }
 
     public List<VanatData> getProductsByCategorySorted(String category, String sort) {
+        logger.info("Service: getProductsByCategorySorted called for category: {}, sort: {}", category, sort);
+        List<VanatData> products;
         if ("desc".equalsIgnoreCase(sort)) {
-            return repo.findByCategoryOrderByPriceDesc(category);
+            products = repo.findByCategoryOrderByPriceDesc(category);
+        } else {
+            products = repo.findByCategoryOrderByPriceAsc(category);
         }
-        return repo.findByCategoryOrderByPriceAsc(category);
+        logger.info("Service: Found {} products for category: {}", products.size(), category);
+        return products;
     }
 
     public List<VanatData> getAllProductsSorted(String sort) {
+        logger.info("Service: getAllProductsSorted called with sort: {}", sort);
+        List<VanatData> products;
         if ("desc".equalsIgnoreCase(sort)) {
-            return repo.findAllByOrderByPriceDesc();
+            products = repo.findAllByOrderByPriceDesc();
+        } else {
+            products = repo.findAllByOrderByPriceAsc();
         }
-        return repo.findAllByOrderByPriceAsc();
+        logger.info("Service: Found {} products after sorting", products.size());
+        return products;
     }
 
     public ResponseEntity<?> deleteProduct(Integer id) {

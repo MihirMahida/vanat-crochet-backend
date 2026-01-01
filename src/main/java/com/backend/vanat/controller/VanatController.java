@@ -152,17 +152,23 @@ public class VanatController {
     public List<ProductDTO> getProductsByCategorySorted(
             @PathVariable String category,
             @RequestParam(defaultValue = "asc") String sort) {
-        return service.getProductsByCategorySorted(category, sort).stream()
+        logger.info("Controller: getProductsByCategorySorted called for category: {}, sort: {}", category, sort);
+        List<ProductDTO> products = service.getProductsByCategorySorted(category, sort).stream()
                 .map(ProductDTO::new)
                 .collect(Collectors.toList());
+        logger.info("Controller: Found {} products for category: {}", products.size(), category);
+        return products;
     }
 
     @GetMapping("/sort")
     public List<ProductDTO> getSortedProducts(
             @RequestParam(defaultValue = "asc") String sort) {
-        return service.getAllProductsSorted(sort).stream()
+        logger.info("Controller: getSortedProducts called with sort: {}", sort);
+        List<ProductDTO> products = service.getAllProductsSorted(sort).stream()
                 .map(ProductDTO::new)
                 .collect(Collectors.toList());
+        logger.info("Controller: Found {} products after sorting", products.size());
+        return products;
     }
 
     @PutMapping("/{id}")
