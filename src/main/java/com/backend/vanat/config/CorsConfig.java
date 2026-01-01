@@ -9,7 +9,8 @@ public class CorsConfig implements WebMvcConfigurer {
     @Override
     public void addCorsMappings(CorsRegistry registry) {
         registry.addMapping("/**")
-                .allowedOrigins("https://vanat-crochets.com", "http://localhost:3000", "https://vanat-crochet-frontend.onrender.com") // Add your Vercel URL later
+                .allowedOrigins("https://vanat-crochets.com", "http://localhost:3000", "https://vanat-crochet-frontend.onrender.com"
+                , "http://localhost:8080/") // Add your Vercel URL later
                 .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS");
     }
 }
