@@ -22,7 +22,6 @@ public class VanatData {
     private String imageName;
     private String imageType;
     @Lob
-    @Column(columnDefinition = "BYTEA")
     private byte[] imageData;
 
 }
