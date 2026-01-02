@@ -25,9 +25,10 @@ public class VanatService {
         this.repo = repo;
     }
 
-    public List<VanatData> getAllProducts() {
-        return repo.findAll();
-    }
+    @Transactional(readOnly = true)
+	public List<VanatData> getAllProducts() {
+		return repo.findAll();
+	}
 
     public Optional<VanatData> findById(Integer id) {
         return repo.findById(id);
@@ -55,29 +56,31 @@ public class VanatService {
         return repo.saveAll(products);
     }
 
-    public List<VanatData> getProductsByCategorySorted(String category, String sort) {
-        logger.info("Service: getProductsByCategorySorted called for category: {}, sort: {}", category, sort);
-        List<VanatData> products;
-        if ("desc".equalsIgnoreCase(sort)) {
-            products = repo.findByCategoryOrderByPriceDesc(category);
-        } else {
-            products = repo.findByCategoryOrderByPriceAsc(category);
-        }
-        logger.info("Service: Found {} products for category: {}", products.size(), category);
-        return products;
-    }
+    @Transactional(readOnly = true)
+	public List<VanatData> getAllProductsSorted(String sort) {
+		logger.info("Service: getAllProductsSorted called with sort: {}", sort);
+		List<VanatData> products;
+		if ("desc".equalsIgnoreCase(sort)) {
+			products = repo.findAllByOrderByPriceDesc();
+		} else {
+			products = repo.findAllByOrderByPriceAsc();
+		}
+		logger.info("Service: Found {} products after sorting", products.size());
+		return products;
+	}
 
-    public List<VanatData> getAllProductsSorted(String sort) {
-        logger.info("Service: getAllProductsSorted called with sort: {}", sort);
-        List<VanatData> products;
-        if ("desc".equalsIgnoreCase(sort)) {
-            products = repo.findAllByOrderByPriceDesc();
-        } else {
-            products = repo.findAllByOrderByPriceAsc();
-        }
-        logger.info("Service: Found {} products after sorting", products.size());
-        return products;
-    }
+	@Transactional(readOnly = true)
+	public List<VanatData> getProductsByCategorySorted(String category, String sort) {
+		logger.info("Service: getProductsByCategorySorted called for category: {}, sort: {}", category, sort);
+		List<VanatData> products;
+		if ("desc".equalsIgnoreCase(sort)) {
+			products = repo.findByCategoryOrderByPriceDesc(category);
+		} else {
+			products = repo.findByCategoryOrderByPriceAsc(category);
+		}
+		logger.info("Service: Found {} products for category: {}", products.size(), category);
+		return products;
+	}
 
     public ResponseEntity<?> deleteProduct(Integer id) {
         if (repo.existsById(id)) {
