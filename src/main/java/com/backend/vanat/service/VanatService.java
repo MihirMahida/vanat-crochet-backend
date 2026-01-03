@@ -25,15 +25,19 @@ public class VanatService {
         this.repo = repo;
     }
 
+    // Fetch products WITHOUT images (fast)
     @Transactional(readOnly = true)
-	public List<VanatData> getAllProducts() {
-		return repo.findAll();
-	}
+    public List<VanatData> getAllProducts() {
+        return repo.findAllWithoutImage();
+    }
 
+    // Fetch single product WITH image data
+    @Transactional(readOnly = true)
     public Optional<VanatData> findById(Integer id) {
         return repo.findById(id);
     }
 
+    // Fetch ONLY image data (optimized)
     @Transactional(readOnly = true)
     public Optional<ImageDTO> getImage(Integer id) {
         logger.info("Service: getImage called for id: {}", id);
@@ -48,40 +52,45 @@ public class VanatService {
         }
     }
 
+    @Transactional
     public VanatData save(VanatData product) {
         return repo.save(product);
     }
 
+    @Transactional
     public List<VanatData> saveAll(List<VanatData> products) {
         return repo.saveAll(products);
     }
 
+    // Fetch products by category WITHOUT images (fast)
     @Transactional(readOnly = true)
-	public List<VanatData> getAllProductsSorted(String sort) {
-		logger.info("Service: getAllProductsSorted called with sort: {}", sort);
-		List<VanatData> products;
-		if ("desc".equalsIgnoreCase(sort)) {
-			products = repo.findAllByOrderByPriceDesc();
-		} else {
-			products = repo.findAllByOrderByPriceAsc();
-		}
-		logger.info("Service: Found {} products after sorting", products.size());
-		return products;
-	}
+    public List<VanatData> getProductsByCategorySorted(String category, String sort) {
+        logger.info("Service: getProductsByCategorySorted called for category: {}, sort: {}", category, sort);
+        List<VanatData> products;
+        if ("desc".equalsIgnoreCase(sort)) {
+            products = repo.findByCategoryOrderByPriceDescWithoutImage(category);
+        } else {
+            products = repo.findByCategoryOrderByPriceAscWithoutImage(category);
+        }
+        logger.info("Service: Found {} products for category: {}", products.size(), category);
+        return products;
+    }
 
-	@Transactional(readOnly = true)
-	public List<VanatData> getProductsByCategorySorted(String category, String sort) {
-		logger.info("Service: getProductsByCategorySorted called for category: {}, sort: {}", category, sort);
-		List<VanatData> products;
-		if ("desc".equalsIgnoreCase(sort)) {
-			products = repo.findByCategoryOrderByPriceDesc(category);
-		} else {
-			products = repo.findByCategoryOrderByPriceAsc(category);
-		}
-		logger.info("Service: Found {} products for category: {}", products.size(), category);
-		return products;
-	}
+    // Fetch all products sorted WITHOUT images (fast)
+    @Transactional(readOnly = true)
+    public List<VanatData> getAllProductsSorted(String sort) {
+        logger.info("Service: getAllProductsSorted called with sort: {}", sort);
+        List<VanatData> products;
+        if ("desc".equalsIgnoreCase(sort)) {
+            products = repo.findAllByOrderByPriceDescWithoutImage();
+        } else {
+            products = repo.findAllByOrderByPriceAscWithoutImage();
+        }
+        logger.info("Service: Found {} products after sorting", products.size());
+        return products;
+    }
 
+    @Transactional
     public ResponseEntity<?> deleteProduct(Integer id) {
         if (repo.existsById(id)) {
             repo.deleteById(id);
@@ -90,6 +99,7 @@ public class VanatService {
         return ResponseEntity.notFound().build();
     }
 
+    @Transactional
     public ResponseEntity<VanatData> updateProduct(Integer id, VanatData productDetails) {
         return repo.findById(id)
                 .map(product -> {
