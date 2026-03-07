@@ -9,6 +9,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -44,9 +45,9 @@ public class VanatController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<VanatData> getProductById(@PathVariable Integer id) {
+    public ResponseEntity<ProductDTO> getProductById(@PathVariable Integer id) {
         return service.findById(id)
-                .map(ResponseEntity::ok)
+                .map(product -> ResponseEntity.ok(new ProductDTO(product)))
                 .orElse(ResponseEntity.notFound().build());
     }
 
@@ -59,7 +60,7 @@ public class VanatController {
                     HttpHeaders headers = new HttpHeaders();
                     headers.setContentType(MediaType.parseMediaType(imageDTO.getContentType()));
                     headers.setContentLength(imageDTO.getData().length);
-                    return new ResponseEntity<>(imageDTO.getData(), headers, org.springframework.http.HttpStatus.OK);
+                    return new ResponseEntity<>(imageDTO.getData(), headers, HttpStatus.OK);
                 })
                 .orElseGet(() -> {
                     logger.warn("Controller: Image not found for id: {}", id);
@@ -78,7 +79,9 @@ public class VanatController {
     }
 
     @PostMapping("/multipleProducts")
-    public ResponseEntity<?> createMultipleProductsProduct(@RequestBody List<VanatData> products, @RequestHeader("X-API-KEY") String receivedKey) {
+    public ResponseEntity<?> createMultipleProductsProduct(
+            @RequestBody List<VanatData> products,
+            @RequestHeader("X-API-KEY") String receivedKey) {
 
         if (!adminKey.equals(receivedKey)) {
             return ResponseEntity.status(401).body("Unauthorized: Invalid API Key");
